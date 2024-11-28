@@ -1,0 +1,101 @@
+DROP TABLE IF EXISTS nota CASCADE; 
+DROP TABLE IF EXISTS turma CASCADE;
+DROP TABLE IF EXISTS aluno CASCADE;
+DROP TABLE IF EXISTS curso CASCADE;
+DROP TABLE IF EXISTS professor CASCADE;
+
+CREATE TABLE aluno (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    endereco VARCHAR(255),
+    data_nascimento DATE NOT NULL,
+    telefone VARCHAR(15)
+);
+
+CREATE TABLE curso (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    carga_horaria INT NOT NULL,
+    descricao TEXT
+);
+
+CREATE TABLE professor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    especialidade VARCHAR(100),
+    telefone VARCHAR(15),
+    email VARCHAR(100)
+);
+
+CREATE TABLE turma (
+    id SERIAL PRIMARY KEY,
+    horario VARCHAR(50) NOT NULL,
+    sala VARCHAR(20) NOT NULL,
+    id_curso INT REFERENCES curso(id) ON DELETE CASCADE,
+    id_professor INT REFERENCES professor(id) ON DELETE CASCADE
+);
+
+CREATE TABLE nota (
+    id SERIAL PRIMARY KEY,
+    valor NUMERIC(4, 2) NOT NULL,
+    data DATE NOT NULL,
+    id_aluno INT REFERENCES aluno(id) ON DELETE CASCADE,
+    id_turma INT REFERENCES turma(id) ON DELETE CASCADE
+);
+
+INSERT INTO aluno (nome, endereco, data_nascimento, telefone)
+VALUES
+('Pedro Silva', 'Rua das Flores, 123', '2004-08-20', '(11) 99999-9999'),
+('Ana Souza', 'Avenida Central, 456', '2003-08-20', '(21) 98888-8888');
+
+INSERT INTO curso (nome, carga_horaria, descricao)
+VALUES
+('Matemática', 80, 'Curso básico de matemática'),
+('Biologia', 60, 'Introdução à biologia');
+
+INSERT INTO professor (nome, especialidade, telefone, email)
+VALUES
+('Yuri Deivson', 'Matemática', '(11) 99999-8888', 'yuri.deivson@gmail.com'),
+('Ivar Lothbrok', 'Biologia', '(21) 88888-7777', 'ivar.lothbrok@gmail.com');
+
+INSERT INTO turma (horario, sala, id_curso, id_professor)
+VALUES
+('08:00 - 10:00', '101', 1, 1),
+('10:00 - 12:00', '202', 2, 2);
+
+INSERT INTO nota (valor, data, id_aluno, id_turma)
+VALUES
+(9.5, '2024-09-15', 1, 1),
+(8.0, '2024-09-16', 2, 2);
+
+UPDATE aluno
+SET endereco = 'Rua Nova, 123'
+WHERE nome = 'Ana Souza';
+
+UPDATE nota
+SET valor = 9.2
+WHERE id_aluno = 2 AND id_turma = 2;
+
+SELECT
+    a.nome AS aluno_nome,
+    a.data_nascimento AS aluno_data_nascimento,
+    a.telefone AS aluno_telefone,
+    a.endereco AS aluno_endereco,  
+    n.valor AS nota_valor,
+    n.data AS nota_data,
+    t.horario AS turma_horario,
+    t.sala AS turma_sala,
+    c.nome AS curso_nome,
+    c.carga_horaria AS curso_carga_horaria,
+    p.nome AS professor_nome,
+    p.email AS professor_email
+FROM
+    aluno a
+LEFT JOIN
+    nota n ON a.id = n.id_aluno
+LEFT JOIN
+    turma t ON n.id_turma = t.id
+LEFT JOIN
+    curso c ON t.id_curso = c.id
+LEFT JOIN
+    professor p ON t.id_professor = p.id;
